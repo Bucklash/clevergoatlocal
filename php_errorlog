@@ -1,0 +1,31 @@
+[12-Dec-2014 17:56:34 Australia/Perth] PHP Parse error:  syntax error, unexpected 'if' (T_IF) in /home/ashstone/public_html/clevergoat.com.au/sites/all/modules/cer/extensions/cer_ief/cer_ief.module on line 73
+[12-Dec-2014 17:59:20 Australia/Perth] PHP Parse error:  syntax error, unexpected 'if' (T_IF) in /home/ashstone/public_html/clevergoat.com.au/sites/all/modules/cer/extensions/cer_ief/cer_ief.module on line 73
+[12-Dec-2014 18:01:32 Australia/Perth] PHP Parse error:  syntax error, unexpected 'if' (T_IF) in /home/ashstone/public_html/clevergoat.com.au/sites/all/modules/cer/extensions/cer_ief/cer_ief.module on line 73
+[12-Dec-2014 18:01:44 Australia/Perth] PHP Parse error:  syntax error, unexpected 'if' (T_IF) in /home/ashstone/public_html/clevergoat.com.au/sites/all/modules/cer/extensions/cer_ief/cer_ief.module on line 73
+[09-Jan-2015 16:54:24 Australia/Perth] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[HY000]: General error: 2006 MySQL server has gone away' in /home/ashstone/public_html/clevergoat.com.au/includes/database/database.inc:2171
+Stack trace:
+#0 /home/ashstone/public_html/clevergoat.com.au/includes/database/database.inc(2171): PDOStatement->execute(Array)
+#1 /home/ashstone/public_html/clevergoat.com.au/includes/database/database.inc(683): DatabaseStatementBase->execute(Array, Array)
+#2 /home/ashstone/public_html/clevergoat.com.au/includes/database/database.inc(2350): DatabaseConnection->query('SELECT expire, ...', Array, Array)
+#3 /home/ashstone/public_html/clevergoat.com.au/includes/lock.inc(167): db_query('SELECT expire, ...', Array)
+#4 /home/ashstone/public_html/clevergoat.com.au/includes/lock.inc(146): lock_may_be_available('schema:runtime:...')
+#5 /home/ashstone/public_html/clevergoat.com.au/includes/bootstrap.inc(433): lock_acquire('schema:runtime:...')
+#6 /home/ashstone/public_html/clevergoat.com.au/includes/bootstrap.inc(455): Drupal in /home/ashstone/public_html/clevergoat.com.au/includes/database/database.inc on line 2171
+[09-Jan-2015 16:57:45 Australia/Perth] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[HY000]: General error: 2006 MySQL server has gone away' in /home/ashstone/public_html/clevergoat.com.au/includes/database/database.inc:2171
+Stack trace:
+#0 /home/ashstone/public_html/clevergoat.com.au/includes/database/database.inc(2171): PDOStatement->execute(Array)
+#1 /home/ashstone/public_html/clevergoat.com.au/includes/database/database.inc(683): DatabaseStatementBase->execute(Array, Array)
+#2 /home/ashstone/public_html/clevergoat.com.au/includes/database/database.inc(2350): DatabaseConnection->query('SELECT expire, ...', Array, Array)
+#3 /home/ashstone/public_html/clevergoat.com.au/includes/lock.inc(167): db_query('SELECT expire, ...', Array)
+#4 /home/ashstone/public_html/clevergoat.com.au/includes/lock.inc(146): lock_may_be_available('schema:runtime:...')
+#5 /home/ashstone/public_html/clevergoat.com.au/includes/bootstrap.inc(433): lock_acquire('schema:runtime:...')
+#6 /home/ashstone/public_html/clevergoat.com.au/includes/bootstrap.inc(455): Drupal in /home/ashstone/public_html/clevergoat.com.au/includes/database/database.inc on line 2171
+[09-Jan-2015 16:58:24 Australia/Perth] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[HY000]: General error: 2006 MySQL server has gone away' in /home/ashstone/public_html/clevergoat.com.au/includes/database/database.inc:2171
+Stack trace:
+#0 /home/ashstone/public_html/clevergoat.com.au/includes/database/database.inc(2171): PDOStatement->execute(Array)
+#1 /home/ashstone/public_html/clevergoat.com.au/includes/database/database.inc(683): DatabaseStatementBase->execute(Array, Array)
+#2 /home/ashstone/public_html/clevergoat.com.au/includes/database/database.inc(2350): DatabaseConnection->query('SELECT expire, ...', Array, Array)
+#3 /home/ashstone/public_html/clevergoat.com.au/includes/lock.inc(167): db_query('SELECT expire, ...', Array)
+#4 /home/ashstone/public_html/clevergoat.com.au/includes/lock.inc(146): lock_may_be_available('schema:runtime:...')
+#5 /home/ashstone/public_html/clevergoat.com.au/includes/bootstrap.inc(433): lock_acquire('schema:runtime:...')
+#6 /home/ashstone/public_html/clevergoat.com.au/includes/bootstrap.inc(455): Drupal in /home/ashstone/public_html/clevergoat.com.au/includes/database/database.inc on line 2171
