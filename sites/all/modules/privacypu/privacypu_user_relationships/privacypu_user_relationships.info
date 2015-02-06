@@ -1,0 +1,13 @@
+name = Privacy Per User: User Relationships
+description = Provides a friends only privacy state when using the User Relationships module.
+package = Privacy
+core = 7.x
+dependencies[] = privacypu
+dependencies[] = user_relationships
+
+; Information added by drupal.org packaging script on 2013-10-01
+version = "7.x-1.x-dev"
+core = "7.x"
+project = "privacypu"
+datestamp = "1380623831"
+

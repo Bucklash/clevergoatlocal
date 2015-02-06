@@ -1,0 +1,41 @@
+<?php
+/**
+ * @file
+ * Enables privacy settings for user profile pages.
+ */
+
+/**
+ * Implements hook_ctools_plugin_api().
+ */
+function privacypu_ctools_plugin_api($owner, $api) {
+  if ($owner == 'privacypu' && $api == 'privacypu_default_types') {
+    return array('version' => 1);
+  }
+}
+
+/**
+ * Implements hook_privacypu_default_types().
+ */
+function privacypu_privacypu_default_types() {
+  $export = array();
+  $privacy_type = new stdClass();
+  $privacy_type->disabled = FALSE;
+  $privacy_type->api_version = 1;
+  $privacy_type->name = 'profile';
+  $privacy_type->title = 'Profile';
+  $privacy_type->weight = -10;
+  $privacy_type->default_state = 'default';
+
+  $export[$privacy_type->name] = $privacy_type;
+  return $export;
+}
+
+/**
+ * Implements hook_menu_alter().
+ *
+ * Use the user privacy settings to determine access for user profile pages.
+ */
+function privacypu_profile_menu_alter(&$items) {
+  $items['user/%user']['access callback'] = 'privacypu_check_access';
+  $items['user/%user']['access arguments'] = array(1, 'profile', 'access user profiles');
+}

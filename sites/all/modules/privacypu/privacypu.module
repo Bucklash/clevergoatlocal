@@ -1,0 +1,280 @@
+<?php
+/**
+ * @file
+ * Provides a simple framework to enable privacy settings per user.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function privacypu_menu() {
+  $items['admin/structure/privacypu/settings'] = array(
+    'file' => 'privacypu.admin.inc',
+    'title' => 'Settings',
+    'description' => 'Change the Privacy Per User settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('privacypu_admin_settings'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Add the privacy settings form elements to the user account settings form.
+ */
+function privacypu_form_user_profile_form_alter(&$form, &$form_state) {
+  if (isset($form['#user_category']) && $form['#user_category'] == 'account') {
+    $privacy_types = privacypu_types_load();
+    $settings = privacypu_settings_load($form['#user']->uid);
+    $options = privacypu_states_options();
+
+    $form['privacypu'] = array(
+      '#type' => 'fieldset',
+      '#title' => 'Privacy',
+      '#weight' => 10,
+      '#collapsible' => TRUE,
+    );
+
+    foreach ($privacy_types as $privacy_type) {
+      if (!isset($privacy_type->disabled) || !$privacy_type->disabled) {
+        $form['privacypu'][$privacy_type->name] = array(
+          '#type' => 'select',
+          '#title' => $privacy_type->title,
+          '#options' => $options,
+          '#default_value' => $settings[$privacy_type->name]['state'],
+          '#weight' => $privacy_type->weight ? $privacy_type->weight : 0,
+        );
+      }
+    }
+
+    array_unshift($form['#submit'], 'privacypu_user_profile_form_submit');
+  }
+}
+
+/**
+ * Implements FAPI submit for privacypu_form_user_profile_form_alter().
+ */
+function privacypu_user_profile_form_submit($form, &$form_state) {
+  $privacy_types = privacypu_types_load();
+
+  foreach ($privacy_types as $privacy_type) {
+    if (!isset($privacy_type->disabled) || !$privacy_type->disabled) {
+      privacypu_settings_save($form['#user']->uid, $privacy_type->name, $form_state['values'][$privacy_type->name]);
+      // Remove the form values so they do not get saved in the user table's
+      // serialized data field.
+      unset($form_state['values'][$privacy_type->name]);
+    }
+  }
+}
+
+/**
+ * Get an array of states to be used as options in a form select element.
+ */
+function privacypu_states_options() {
+  $options = array(
+    'private' => t('Do not share'),
+    'public' => t('Share with everyone'),
+  );
+
+  foreach (privacypu_states_load() as $state => $value) {
+    $options[$state] = $value['title'];
+  }
+
+  return $options;
+}
+
+/**
+ * Get an array of types to be used as options in a form select element.
+ */
+function privacypu_types_options() {
+  $options = array();
+
+  foreach (privacypu_types_load() as $privacy_type) {
+    if (!$privacy_type->disabled) {
+      $options[$privacy_type->name] = $privacy_type->title;
+    }
+  }
+
+  return $options;
+}
+
+/**
+ * Save the privacy settings for a user.
+ *
+ * @param integer $uid
+ *   The user ID for the user whose privacy settings should be saved.
+ * @param string $type
+ *   The machine name of the privacy type for which the settings are being
+ *   saved.
+ * @param string $state
+ *   The privacy state of this type for this user.
+ */
+function privacypu_settings_save($uid, $type, $state) {
+  $settings = privacypu_settings_load($uid);
+  $privacypu = new stdClass();
+  $privacypu->uid = $uid;
+  $privacypu->type = $type;
+  $privacypu->state = $state;
+
+  // Insert a new setting.
+  if ($settings[$type]['default']) {
+    drupal_write_record('privacypu', $privacypu);
+  }
+  // Update an existing setting if it has changed.
+  elseif ($settings[$type]['state'] != $state) {
+    drupal_write_record('privacypu', $privacypu, array('uid', 'type'));
+  }
+}
+
+/**
+ * Load the privacy settings for a user.
+ *
+ * @param integer $uid
+ *   The user ID for the user whose privacy settings should be loaded.
+ *
+ * @return array
+ *   An array of privacy setting states keyed by type.
+ */
+function privacypu_settings_load($uid) {
+  $settings = &drupal_static(__FUNCTION__);
+
+  if (!isset($settings[$uid])) {
+
+    // Add default settings for each type.
+    $global_default_state = variable_get('privacypu_default_state', 'private');
+    $privacy_types = privacypu_types_load();
+    foreach ($privacy_types as $privacy_type) {
+      if (!isset($privacy_type->disabled) || !$privacy_type->disabled) {
+        $settings[$uid][$privacy_type->name] = array(
+          'state' => ($privacy_type->default_state == 'default') ? $global_default_state : $privacy_type->default_state,
+          'default' => TRUE,
+        );
+      }
+    }
+
+    // Load the user settings.
+    $result = db_query("SELECT type, state FROM {privacypu} WHERE uid = :uid",
+      array(
+        ':uid' => $uid,
+      ));
+
+    // Overwrite the defaults with any user specified settings.
+    foreach ($result as $row) {
+      if (isset($privacy_types[$row->type]) && (!isset($privacy_types[$row->type]->disabled) || !$privacy_types[$row->type]->disabled)) {
+        $settings[$uid][$row->type] = array(
+          'state' => $row->state,
+          'default' => FALSE,
+        );
+      }
+    }
+  }
+
+  return $settings[$uid];
+}
+
+/**
+ * Load an array of all the privacy types.
+ */
+function privacypu_types_load($reset = FALSE) {
+  ctools_include('export');
+  return ctools_export_load_object('privacypu_types');
+}
+
+/**
+ * Load an array of all the privacy states from hook_privacypu_states_info().
+ */
+function privacypu_states_load() {
+  $states = &drupal_static(__FUNCTION__);
+
+  if (empty($states)) {
+    $states = module_invoke_all('privacypu_states_info');
+    drupal_alter('privacypu_states_info', $states);
+  }
+
+  return $states;
+}
+
+/**
+ * Decide whether the current user has access to a thing with privacy settings.
+ *
+ * @param object $account
+ *   The user object for the user whose privacy settings should be checked.
+ * @param string $type
+ *   The machine name of the type of element for which the privacy is being
+ *   checked.
+ * @param string $permission
+ *   The optional permission to check.
+ *
+ * @return boolean
+ *   TRUE if the user should have access, otherwise FALSE.
+ */
+function privacypu_check_access($account, $type, $permission = NULL) {
+  global $user;
+
+  // Deny access for incorrect parameters.
+  if (!$account || !$account->uid) {
+    return FALSE;
+  }
+
+  // Always allow users to view their own content.
+  // Always allow admins to view user content.
+  if ($user->uid == $account->uid || user_access('administer users')) {
+    return TRUE;
+  }
+
+  // Deny access to accounts that have never been accessed.
+  // Deny access to accounts that are blocked.
+  // Deny access to users without the given permission.
+  $perm = $permission ? user_access($permission) : TRUE;
+
+  if (!$account->access || !$account->status || !$perm) {
+    return FALSE;
+  }
+
+  // Load the privacy settings for this user.
+  $settings = privacypu_settings_load($account->uid);
+
+  // Allow access if the privacy settings for this type allow everyone to
+  // view the content.
+  if ($settings[$type]['state'] == 'public') {
+    return TRUE;
+  }
+
+  // Deny access if the privacy settings for this type do not allow anyone
+  // to view the content.
+  if ($settings[$type]['state'] == 'private') {
+    return FALSE;
+  }
+
+  // Allow access if the privacy settings for this type match a state defined
+  // by hook_privacypu_states_info() and the result of the callback function
+  // is true.
+  foreach (privacypu_states_load() as $state => $value) {
+    if ($settings[$type]['state'] == $state) {
+      return call_user_func_array($value['callback'], array($account));
+    }
+  }
+
+  // Deny access if there were no matching privacy settings.
+  return FALSE;
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function privacypu_views_api() {
+  return array('version' => '3.0');
+}
+
+/**
+ * Implements hook_ctools_plugin_directory().
+ */
+function privacypu_ctools_plugin_directory($module, $type) {
+  if ($type == 'export_ui') {
+    return 'plugins/export_ui';
+  }
+}

@@ -1,0 +1,46 @@
+<?php
+/**
+ * @file
+ * Provides a friends only privacy state when using the User Relationships module.
+ */
+
+/**
+ * Implements hook_privacypu_states_info().
+ */
+function privacypu_user_relationships_privacypu_states_info() {
+  $states = array(
+    'friend' => array(
+      'title' => t('Share with friends only'),
+      'callback' => 'privacypu_user_relationships_privacy_state',
+    ),
+  );
+
+  return $states;
+}
+
+/**
+ * Callback for hook_privacypu_states_info().
+ */
+function privacypu_user_relationships_privacy_state($account) {
+  global $user;
+
+  // Call to user_relationships_load() from UR API. Check for existing
+  // relationships between $user and $account, using special column
+  // "between". Returns RID object, or FALSE.
+  $relationship = user_relationships_load(array("between" => array($user->uid, $account->uid)));
+
+  // If no relationship found, no access.
+  if (!$relationship) {
+    return FALSE;
+  }
+
+  // Only supports the newest relationship, if there are multiple.
+  $relationship = array_pop($relationship);
+
+  // Check if the relationship is approved, or if it requires it.
+  if ($relationship->approved || !$relationship->requires_approval) {
+    return TRUE;
+  }
+
+  return FALSE;
+}

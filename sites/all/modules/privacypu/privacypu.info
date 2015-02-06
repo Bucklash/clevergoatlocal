@@ -1,0 +1,12 @@
+name = Privacy Per User
+description = Provides a simple framework to enable privacy settings per user.
+dependencies[] = ctools
+package = Privacy
+core = 7.x
+files[] = privacypu_plugin_argument_validate_privacypu.inc
+; Information added by drupal.org packaging script on 2013-10-01
+version = "7.x-1.x-dev"
+core = "7.x"
+project = "privacypu"
+datestamp = "1380623831"
+

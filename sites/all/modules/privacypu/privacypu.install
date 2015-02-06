@@ -1,0 +1,90 @@
+<?php
+/**
+ * @file
+ * Provides a simple framework to enable privacy settings per user.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function privacypu_schema() {
+  $schema = array();
+
+  $schema['privacypu'] = array(
+    'description' => 'Stores per user privacy settings.',
+    'fields' => array(
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => "The user ID of the user whose privacy settings are saved.",
+      ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => "The name of the privacy type.",
+      ),
+      'state' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => "The privacy state.",
+      ),
+    ),
+    'primary key' => array('uid', 'type'),
+  );
+
+  $schema['privacypu_types'] = array(
+    'description' => 'Stores privacy type definitions.',
+    'export' => array(
+      'key' => 'name',
+      'identifier' => 'privacy_type',
+      'default hook' => 'privacypu_default_types',
+      'api' => array(
+        'owner' => 'privacypu',
+        'api' => 'privacypu_default_types',
+        'minimum_version' => 1,
+        'current_version' => 1,
+      ),
+      'load all callback' => 'privacypu_types_load',
+    ),
+    'fields' => array(
+      'ptid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary key field for the table.',
+        'no export' => TRUE,
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => '32',
+        'description' => 'Machine name of the privacy type.',
+      ),
+      'title' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'description' => 'Human readable name of the privacy type.',
+      ),
+      'weight' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'default_state' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'description' => "The default privacy state of this type.",
+      ),
+    ),
+    'primary key' => array('ptid'),
+    'unique keys' => array(
+      'name' => array('name'),
+    ),
+  );
+
+  return $schema;
+}

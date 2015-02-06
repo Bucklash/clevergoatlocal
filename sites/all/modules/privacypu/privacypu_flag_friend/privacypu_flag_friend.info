@@ -1,0 +1,12 @@
+name = Privacy Per User: Flag Friend
+description = Provides a friends only privacy state when using the Flag Friend module.
+package = Privacy
+core = 7.x
+dependencies[] = privacypu
+dependencies[] = flag_friend
+; Information added by drupal.org packaging script on 2013-10-01
+version = "7.x-1.x-dev"
+core = "7.x"
+project = "privacypu"
+datestamp = "1380623831"
+

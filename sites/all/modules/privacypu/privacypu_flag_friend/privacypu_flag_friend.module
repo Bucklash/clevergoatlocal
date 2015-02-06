@@ -1,0 +1,33 @@
+<?php
+/**
+ * @file
+ * Provides a friends only privacy state when using the Flag Friend module.
+ */
+
+/**
+ * Implements hook_privacypu_states_info().
+ */
+function privacypu_flag_friend_privacypu_states_info() {
+  $states = array(
+    'friend' => array(
+      'title' => t('Share with friends only'),
+      'callback' => 'privacypu_flag_friend_privacy_state',
+    ),
+  );
+
+  return $states;
+}
+
+/**
+ * Callback for hook_privacypu_states_info().
+ */
+function privacypu_flag_friend_privacy_state($account) {
+  global $user;
+  $sql = "SELECT 1 FROM {flag_friend} WHERE (uid = :uid AND friend_uid = :friend_uid) OR (uid = :friend_uid AND friend_uid = :uid)";
+  $result = (boolean) db_query_range($sql, 0, 1, array(
+    ':uid' => $user->uid,
+    ':friend_uid' => $account->uid,
+  ))->fetchField();
+
+  return $result;
+}
